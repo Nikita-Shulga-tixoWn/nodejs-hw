@@ -1,16 +1,19 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 export async function connectMongoDB() {
     const mongoUrl = process.env.MONGO_URL;
 
     if (!mongoUrl) {
-        throw new Error('MONGO_URL is not defined in environment variables');
+        console.error('❌ MONGO_URL is not defined');
+        process.exit(1);
     }
 
-    await mongoose.connect(mongoUrl);
-
-    console.log('✅ MongoDB connection established successfully');
+    try {
+        await mongoose.connect(mongoUrl);
+        console.log('✅ MongoDB connection established successfully');
+    } catch (err) {
+        console.error('❌ MongoDB connection failed:', err.message);
+        process.exit(1);
+    }
 }
+

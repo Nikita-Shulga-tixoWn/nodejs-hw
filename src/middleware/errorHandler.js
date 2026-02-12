@@ -1,7 +1,10 @@
-export function errorHandler(err, req, res, next) {
-    const status = err.status || err.statusCode || 500;
+import { HttpError } from 'http-errors';
 
-    res.status(status).json({
-        message: err.message || 'Internal Server Error',
-    });
+export function errorHandler(err, req, res, next) {
+    const isHttpError = err instanceof HttpError;
+
+    const statusCode = isHttpError ? err.statusCode : 500;
+    const message = err.message || 'Internal Server Error';
+
+    res.status(statusCode).json({ message });
 }
