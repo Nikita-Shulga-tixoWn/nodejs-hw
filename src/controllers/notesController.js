@@ -3,8 +3,48 @@ import { Note } from '../models/note.js';
 
 export async function getAllNotes(req, res, next) {
     try {
-        const notes = await Note.find().sort({ createdAt: -1 });
-        res.status(200).json(notes);
+        const { page = 1, perPage = 10, tag, search = '' } = req.query;
+
+        const pageNumber = Number(page);
+        const perPageNumber = Number(perPage);
+
+        const filter = {};
+
+        if (tag) {
+            filter.tag = tag;
+        }
+
+        // текстовий пошук через $text
+        if (search !== '') {
+            filter.$text = { $search: search };
+        }
+
+        const skip = (pageNumber - 1) * perPageNumber;
+
+        const totalNotes = await Note.countDocuments(filter);
+
+        let query = Note.find(filter);
+
+        // якщо є пошук — можна відсортувати за релевантністю
+        if (filter.$text) {
+            query = query
+                .select({ score: { $meta: 'textScore' } })
+                .sort({ score: { $meta: 'textScore' } });
+        } else {
+            query = query.sort({ createdAt: -1 });
+        }
+
+        const notes = await query.skip(skip).limit(perPageNumber);
+
+        const totalPages = Math.ceil(totalNotes / perPageNumber) || 1;
+
+        res.status(200).json({
+            page: pageNumber,
+            perPage: perPageNumber,
+            totalNotes,
+            totalPages,
+            notes,
+        });
     } catch (err) {
         next(err);
     }

@@ -1,17 +1,6 @@
 import mongoose from 'mongoose';
+import { TAGS } from '../constants/tags.js';
 
-const TAGS = [
-    'Work',
-    'Personal',
-    'Meeting',
-    'Shopping',
-    'Ideas',
-    'Travel',
-    'Finance',
-    'Health',
-    'Important',
-    'Todo',
-];
 
 const noteSchema = new mongoose.Schema(
     {
@@ -33,5 +22,7 @@ const noteSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+noteSchema.index({ title: 'text', content: 'text' });
 
 export const Note = mongoose.model('Note', noteSchema);
