@@ -14,27 +14,28 @@ export async function getAllNotes(req, res, next) {
             filter.tag = tag;
         }
 
-        // текстовий пошук через $text
         if (search !== '') {
             filter.$text = { $search: search };
         }
 
         const skip = (pageNumber - 1) * perPageNumber;
 
-        const totalNotes = await Note.countDocuments(filter);
+        let notesQuery = Note.find(filter);
 
-        let query = Note.find(filter);
-
-        // якщо є пошук — можна відсортувати за релевантністю
         if (filter.$text) {
-            query = query
+            notesQuery = notesQuery
                 .select({ score: { $meta: 'textScore' } })
                 .sort({ score: { $meta: 'textScore' } });
         } else {
-            query = query.sort({ createdAt: -1 });
+            notesQuery = notesQuery.sort({ createdAt: -1 });
         }
 
-        const notes = await query.skip(skip).limit(perPageNumber);
+        notesQuery = notesQuery.skip(skip).limit(perPageNumber);
+
+        const [totalNotes, notes] = await Promise.all([
+            Note.countDocuments(filter),
+            notesQuery,
+        ]);
 
         const totalPages = Math.ceil(totalNotes / perPageNumber) || 1;
 
