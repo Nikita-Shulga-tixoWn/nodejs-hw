@@ -5,11 +5,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import handlebars from 'handlebars';
 import { fileURLToPath } from 'node:url';
+
 import { sendEmail } from '../utils/sendMail.js';
 import { User } from '../models/user.js';
 import { Session } from '../models/session.js';
 import { createSession, setSessionCookies } from '../services/auth.js';
-import { ONE_DAY, FIFTEEN_MINUTES } from '../constants/time.js';
 
 const cookieClearOptions = {
     httpOnly: true,
@@ -109,6 +109,7 @@ export async function logoutUser(req, res, next) {
         next(err);
     }
 }
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -123,14 +124,10 @@ export async function requestResetEmail(req, res, next) {
             return res.status(200).json({ message: 'Password reset email sent successfully' });
         }
 
-        const token = jwt.sign(
-            { email: user.email },
-            process.env.JWT_SECRET,
-            {
-                subject: user._id.toString(),
-                expiresIn: '15m',
-            }
-        );
+        const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+            subject: user._id.toString(),
+            expiresIn: '15m',
+        });
 
         const link = `${process.env.FRONTEND_DOMAIN}/reset-password?token=${token}`;
 
@@ -145,6 +142,7 @@ export async function requestResetEmail(req, res, next) {
 
         try {
             await sendEmail({
+                from: process.env.SMTP_FROM, // ✅ FIX: обов’язково вказати відправника
                 to: user.email,
                 subject: 'Password reset',
                 html,
