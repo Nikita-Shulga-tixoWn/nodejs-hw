@@ -16,11 +16,10 @@ import {
     updateNoteSchema,
 } from '../validations/notesValidation.js';
 
-import { authenticate } from '../middlewares/authenticate.js';
+import { authenticate } from '../middleware/authenticate.js';
 
 const router = Router();
 
-// ВСІ нотатки доступні тільки після авторизації
 router.use(authenticate);
 
 router.get('/notes', celebrate(getAllNotesSchema), getAllNotes);
