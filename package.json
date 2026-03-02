@@ -20,9 +20,13 @@
   "homepage": "https://github.com/Nikita-Shulga-tixoWn/nodejs-hw#readme",
   "description": "",
   "dependencies": {
+    "celebrate": "^15.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
+    "http-errors": "^2.0.1",
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.2.1",
     "pino-http": "^11.0.0"
   },
   "devDependencies": {
